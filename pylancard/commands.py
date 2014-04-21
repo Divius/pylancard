@@ -1,6 +1,7 @@
-import random
-import shlex
 import sys
+
+from . import loop
+from . import train
 
 
 HELP = """
@@ -64,41 +65,6 @@ def help_(command, store, arguments):
     print(HELP % dict(languages='\n\n'.join(languages)))
 
 
-def train(command, store, arguments):
-    challenge = expected = None
-    words = list(store.direct_index.items())
-
-    class Stop(Exception):
-        @classmethod
-        def stop(cls, *args):
-            raise cls()
-
-    def go_next(*args):
-        nonlocal challenge, expected
-        challenge, expected = random.choice(words)
-        print("Next word: %s" % challenge)
-        return challenge
-
-    def check(word, *args):
-        if word != expected:
-            print("Wrong, try again")
-            return challenge
-        else:
-            return go_next()
-
-    train_commands = {
-        '/quit': Stop.stop,
-        '/skip': go_next,
-        None: check,  # the default
-    }
-
-    go_next()
-    try:
-        run(store, train_commands, challenge)
-    except Stop:
-        pass
-
-
 DEFAULT_COMMANDS = {
     'quit': lambda *_: sys.exit(0),
     '?': help_,
@@ -106,40 +72,9 @@ DEFAULT_COMMANDS = {
     'add': add,
     'add!': add,
     'list': list_,
-    'train': train,
+    'train': train.train,
 }
 
 
-def matching_command(command, commands_set):
-    candidates = {name: function
-                  for (name, function) in commands_set.items()
-                  if name is not None and name.startswith(command.strip())}
-    if len(candidates) == 1:
-        return next(iter(candidates.values()))
-    elif command in candidates:
-        return candidates[command]
-    elif not candidates and None in commands_set:
-        return commands_set[None]
-    else:
-        if not candidates:
-            print("No such command: %s" % command)
-        else:
-            print("Ambiguous command %s, candidates are %s" %
-                  (command, ', '.join(x[0] for x in candidates)))
-        print("Type ? for help")
-
-
-def run(store, commands_set=None, prompt=''):
-    commands_set = commands_set or DEFAULT_COMMANDS
-    while True:
-        try:
-            line = input('%s > ' % prompt)
-        except EOFError:
-            print()
-            sys.exit(0)
-        command, *arguments = shlex.split(line.strip())
-        if not command:
-            continue
-        function = matching_command(command, commands_set)
-        if function is not None:
-            prompt = function(command, store, arguments) or ''
+def run_default(store):
+    loop.run(store, DEFAULT_COMMANDS)

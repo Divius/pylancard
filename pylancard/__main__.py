@@ -30,4 +30,4 @@ with store.Store(filename) as store_file:
         print("No plugin for language: %s" % store_file.languages[0])
     if store_file.meaning_plugin is None:
         print("No plugin for language: %s" % store_file.languages[1])
-    commands.run(store_file)
+    commands.run_default(store_file)
