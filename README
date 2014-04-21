@@ -1,9 +1,13 @@
 pylancard is a very simple console tool for language learning.
+pylancard is written in Python and supports versions >= 3.2.
 
 Install:
 $ git clone https://github.com/Divius/pylancard
 $ cd pylancard
 $ make env
+
+Test:
+$ make test
 
 Until we have proper scripts, run with:
 $ make
