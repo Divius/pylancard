@@ -1,3 +1,5 @@
+FILE?=${HOME}/.pylancard
+
 run: test
 	env/bin/python -m pylancard ${FILE}
 
@@ -9,4 +11,4 @@ env:
 	virtualenv -p python3 env
 	env/bin/pip install flake8
 
-.PHONY: test env
+.PHONY: run test env

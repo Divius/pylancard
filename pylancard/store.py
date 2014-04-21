@@ -19,8 +19,8 @@ class Store(dict):
     def __init__(self, filename):
         super().__init__()
         self._filename = filename
-        with gzip.open(filename, 'rt') as fp:
-            self.update(json.load(fp))
+        with gzip.open(filename, 'rb') as fp:
+            self.update(json.loads(fp.read().decode('utf-8')))
 
         self.languages = tuple(self['languages'])
         self.direct_index = self['index']
@@ -32,8 +32,8 @@ class Store(dict):
 
     def save(self):
         self['index'] = self.direct_index
-        with gzip.open(self._filename, 'wt') as fp:
-            json.dump(self, fp, indent=2)
+        with gzip.open(self._filename, 'wb') as fp:
+            fp.write(json.dumps(self, indent=2).encode('utf-8'))
 
     close = save
 
