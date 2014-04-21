@@ -1,0 +1,4 @@
+pylancard is a very simple console tool for language learning.
+
+Until we have proper scripts run like:
+$ make FILE=/path/to/data/file
