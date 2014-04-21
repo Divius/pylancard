@@ -11,7 +11,15 @@ class Stop(Exception):
 
 def train(command, store, arguments):
     challenge = expected = None
-    words = list(store.direct_index.items())
+    if command == 'direct':
+        words = list(store.direct_index.items())
+        plugin = store.meaning_plugin
+    elif command == 'reverse':
+        words = list(store.reverse_index.items())
+        plugin = store.original_plugin
+    else:
+        print("ERROR: unknown training mode %s" % command)
+        return
 
     def go_next(*args):
         nonlocal challenge, expected
@@ -20,8 +28,9 @@ def train(command, store, arguments):
         return challenge
 
     def check(word, *args):
+        word = plugin.convert_word(word)
         if word != expected:
-            print("Wrong, try again")
+            print("Wrong, try again" + word)
             return challenge
         else:
             return go_next()
@@ -35,5 +44,5 @@ def train(command, store, arguments):
     go_next()
     try:
         loop.run(store, train_commands, challenge)
-    except Stop:
+    except (Stop, SystemExit):
         pass

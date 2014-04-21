@@ -19,6 +19,10 @@ Commands:
   Display this help
 > quit
   Exit the program
+> direct
+  Start direct training mode (translate from foreign language)
+> reverse
+  Start reverse training mode (translate to foreign language)
 
 When in training mode, commands are the following (note the slash):
 > /quit
@@ -72,7 +76,8 @@ DEFAULT_COMMANDS = {
     'add': add,
     'add!': add,
     'list': list_,
-    'train': train.train,
+    'direct': train.train,
+    'reverse': train.train,
 }
 
 

@@ -26,8 +26,8 @@ if not os.path.exists(filename):
     store.create(filename, languages)
 
 with store.Store(filename) as store_file:
-    if store_file.original_plugin is None:
+    if not store_file.original_plugin.present:
         print("No plugin for language: %s" % store_file.languages[0])
-    if store_file.meaning_plugin is None:
+    if not store_file.meaning_plugin.present:
         print("No plugin for language: %s" % store_file.languages[1])
     commands.run_default(store_file)

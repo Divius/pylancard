@@ -25,10 +25,10 @@ class Store(dict):
         self.languages = tuple(self['languages'])
         self.direct_index = self['index']
         self.reverse_index = {v: k for (k, v) in self.direct_index.items()}
-        self.original_plugin = self._import_plugin(self.languages[0])
-        self._original_plugin = self.original_plugin or base.BaseLanguage(self)
-        self.meaning_plugin = self._import_plugin(self.languages[1])
-        self._meaning_plugin = self.meaning_plugin or base.BaseLanguage(self)
+        self.original_plugin = (self._import_plugin(self.languages[0])
+                                or base.BaseLanguage(self))
+        self.meaning_plugin = (self._import_plugin(self.languages[1])
+                               or base.BaseLanguage(self))
 
     def save(self):
         self['index'] = self.direct_index
@@ -43,8 +43,8 @@ class Store(dict):
         self.save()
 
     def add_word(self, word1, word2, may_overwrite=False):
-        word1 = self._original_plugin.convert_word(word1)
-        word2 = self._meaning_plugin.convert_word(word2)
+        word1 = self.original_plugin.convert_word(word1)
+        word2 = self.meaning_plugin.convert_word(word2)
         if word1 in self.direct_index and not may_overwrite:
             raise KeyError("This word already in dictionary: %s" % word1)
         self.direct_index[word1] = word2
