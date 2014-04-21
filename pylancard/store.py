@@ -5,11 +5,11 @@ from .plugins import base
 
 
 def create(filename, languages):
-    with gzip.open(filename, 'wt') as fp:
-        json.dump({'languages': languages,
-                   'index': {},
-                   'version': 1},
-                  fp, indent=2)
+    with gzip.open(filename, 'wb') as fp:
+        fp.write(json.dumps({'languages': languages,
+                             'index': {},
+                             'version': 1},
+                            fp, indent=2).encode('utf-8'))
 
 
 class Store(dict):
