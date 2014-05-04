@@ -1,18 +1,27 @@
+[![Build Status](https://travis-ci.org/Divius/pylancard.svg?branch=master)](https://travis-ci.org/Divius/pylancard)
+
+# PyLanCard
+
 pylancard is a very simple console tool for language learning.
 pylancard is written in Python and supports versions >= 3.2.
 
 Install:
-$ git clone https://github.com/Divius/pylancard
-$ cd pylancard
-$ make env
+
+    git clone https://github.com/Divius/pylancard
+    cd pylancard
+    make env
 
 Test:
-$ make test
+
+    make test
 
 Until we have proper scripts, run with:
-$ make
+
+    make
+
 or you may set path to data file:
-$ make FILE=/path/to/file
+
+    make FILE=/path/to/file
 
 First time you run, you will be asked for a pair of languages to use.
 Input e.g. "cz,ru" to translate from Czech to Russian.
