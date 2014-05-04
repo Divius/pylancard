@@ -1,3 +1,5 @@
+import os
+import tempfile
 import unittest
 
 from mock import patch  # noqa
@@ -6,6 +8,7 @@ from pylancard import cli
 from pylancard import store
 from pylancard import trainer
 from pylancard.plugins import base as plugins_base
+from pylancard.plugins import cz as lang_cz
 
 
 class FakeStore(store.Store):
@@ -57,7 +60,37 @@ class TestStore(StoreMixin, unittest.TestCase):
         convert_mock.assert_any_call('meaning3')
 
 
+class TestStoreIO(unittest.TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.dir = tempfile.mkdtemp()
+
+    def test_create_open(self):
+        filename = os.path.join(self.dir, 'file')
+        store.create(filename, ('cz', 'Oo'))
+        new_store = store.Store(filename)
+        self.assertEqual(('cz', 'Oo'), new_store.languages)
+        self.assertEqual({}, new_store.direct_index)
+        self.assertEqual({}, new_store.reverse_index)
+        self.assertIsInstance(new_store.original_plugin, lang_cz.Czech)
+        self.assertIsInstance(new_store.meaning_plugin,
+                              plugins_base.BaseLanguage)
+
+    def test_create_open_save(self):
+        filename = os.path.join(self.dir, 'file')
+        store.create(filename, ('cz', 'Oo'))
+        with store.Store(filename) as new_store:
+            new_store.direct_index['word'] = 'meaning'
+        new_store = store.Store(filename)
+        self.assertEqual({'word': 'meaning'}, new_store.direct_index)
+        self.assertEqual({'meaning': 'word'}, new_store.reverse_index)
+
+
 class TestTrainer(StoreMixin, unittest.TestCase):
+
+    def test_unexpected_kind(self):
+        self.assertRaises(ValueError, trainer.Trainer, self.store, "42")
 
     def test_direct_next(self):
         tr = trainer.Trainer(self.store, trainer.DIRECT)
@@ -84,6 +117,20 @@ class TestTrainer(StoreMixin, unittest.TestCase):
         self.assertFalse(tr.check(tr.answer + 'x'))
         convert_mock.assert_any_call(tr.answer)
         convert_mock.assert_any_call(tr.answer + 'x')
+
+
+class TestBaseLanguage(unittest.TestCase):
+
+    def test_convert_word(self):
+        class Test(plugins_base.BaseLanguage):
+            patterns = {'bb': 'BB'}
+
+        self.assertEqual('aBBccBB', Test(None).convert_word('abbccbb'))
+
+    def test_present(self):
+        self.assertFalse(plugins_base.BaseLanguage(None).present)
+        desc = type('Test', (plugins_base.BaseLanguage,), {})
+        self.assertTrue(desc.present)
 
 
 class TestCliAdd(StoreMixin, unittest.TestCase):

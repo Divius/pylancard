@@ -18,7 +18,7 @@ class Trainer:
             self._words = list(store.reverse_index.items())
             self._plugin = store.original_plugin
         else:
-            raise TypeError("Expected kind, got %r", kind)
+            raise ValueError("Expected kind, got %r", kind)
         self.challenge = self.answer = None
 
     def check(self, answer):
