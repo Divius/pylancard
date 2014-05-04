@@ -1,7 +1,7 @@
 FILE?=${HOME}/.pylancard
 
 run: test
-	env/bin/python -m pylancard ${FILE}
+	env/bin/python -m pylancard.cli ${FILE}
 
 test:
 	env/bin/flake8 pylancard
