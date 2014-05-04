@@ -1,7 +1,9 @@
 FILE?=${HOME}/.pylancard
 COVERAGE_GOAL?=70
 
-run: test
+all: test run
+
+run:
 	env/bin/python -m pylancard.cli --debug ${FILE}
 
 test:

@@ -23,6 +23,10 @@ or you may set path to data file:
 
     make FILE=/path/to/file
 
+or you can run just program without running tests:
+
+    make run
+
 First time you run, you will be asked for a pair of languages to use.
 Input e.g. "cz,ru" to translate from Czech to Russian.
 Some languages have special support (composition feature), currently:
