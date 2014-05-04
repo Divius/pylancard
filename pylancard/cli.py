@@ -1,3 +1,5 @@
+import argparse
+import logging
 import os
 import shlex
 import sys
@@ -5,6 +7,9 @@ import sys
 from . import store
 from . import trainer
 from . import utils
+
+
+LOG = logging.getLogger(__name__)
 
 
 HELP = """
@@ -131,9 +136,6 @@ DEFAULT_COMMANDS = {
 }
 
 
-USAGE_HELP = """USAGE: {} <file name>"""
-
-
 LANGUAGE_PROMPT = """Data file does not exists, create?
 Input pair of languages (e.g. ru,cz) "
 or empty string to quit> """
@@ -142,27 +144,25 @@ or empty string to quit> """
 def main():
     import readline  # noqa
 
-    def usage():
-        print(USAGE_HELP.format(sys.argv[0]), file=sys.stderr)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="PyLanCard command line")
+    parser.add_argument("filename", type=str, help="data file name")
+    parser.add_argument("--debug", action='store_true', help="debug mode")
+    args = parser.parse_args()
 
-    try:
-        filename = sys.argv[1]
-    except IndexError:
-        usage()
+    logging.basicConfig(level=logging.DEBUG if args.debug else logging.WARN)
 
-    if not os.path.exists(filename):
+    if not os.path.exists(args.filename):
         languages = input(LANGUAGE_PROMPT)
         if not languages:
             sys.exit()
         languages = [s.strip() for s in languages.split(',')]
-        store.create(filename, languages)
+        store.create(args.filename, languages)
 
-    with store.Store(filename) as store_file:
+    with store.Store(args.filename) as store_file:
         if not store_file.original_plugin.present:
-            print("No plugin for language: %s" % store_file.languages[0])
+            LOG.warn("No plugin for language: %s", store_file.languages[0])
         if not store_file.meaning_plugin.present:
-            print("No plugin for language: %s" % store_file.languages[1])
+            LOG.warn("No plugin for language: %s", store_file.languages[1])
 
         run(store_file, DEFAULT_COMMANDS)
 

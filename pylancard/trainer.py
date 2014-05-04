@@ -4,6 +4,7 @@ import random
 
 DIRECT = 'direct'
 REVERSE = 'reverse'
+LOG = logging.getLogger(__name__)
 
 
 class Trainer:
@@ -23,14 +24,15 @@ class Trainer:
     def check(self, answer):
         converted = self._plugin.convert_word(answer.strip())
         if converted != self.answer:
-            logging.info("'%(converted)s' (converted from '%(answer)s') "
-                         "is incorrect",
-                         locals())
+            LOG.info("'%(converted)s' (converted from '%(answer)s') "
+                     "is incorrect",
+                     locals())
             return False
         else:
+            LOG.debug("%s is accepted", converted)
             return True
 
     def next(self):
         self.challenge, self.answer = random.choice(self._words)
-        logging.debug("Next challenge is '%s'", self.challenge)
+        LOG.debug("Next challenge is '%s'", self.challenge)
         return self.challenge

@@ -1,10 +1,16 @@
 import gzip
 import json
+import logging
 
 from .plugins import base
 
 
+LOG = logging.getLogger(__name__)
+
+
 def create(filename, languages):
+    LOG.info("Creating store %(filename)s for languages %(languages)s",
+             locals())
     with gzip.open(filename, 'wb') as fp:
         fp.write(json.dumps({'languages': languages,
                              'index': {},
@@ -21,14 +27,21 @@ class Store(dict):
         self._filename = filename
         with gzip.open(filename, 'rb') as fp:
             self.update(json.loads(fp.read().decode('utf-8')))
+            LOG.info("Opened store %(filename)s of version %(version)s",
+                     dict(filename=filename, version=self.get('version')))
 
         self.languages = tuple(self['languages'])
+        LOG.info("Languages: %s", self.languages)
         self.direct_index = self['index']
         self.reverse_index = {v: k for (k, v) in self.direct_index.items()}
         self.original_plugin = (self._import_plugin(self.languages[0])
                                 or base.BaseLanguage(self))
+        LOG.info("Class of original language plugin: %s",
+                 self.original_plugin.__class__)
         self.meaning_plugin = (self._import_plugin(self.languages[1])
                                or base.BaseLanguage(self))
+        LOG.info("Class of meaning language plugin: %s",
+                 self.meaning_plugin.__class__)
 
     def save(self):
         self['index'] = self.direct_index
