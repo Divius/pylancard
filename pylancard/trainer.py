@@ -20,6 +20,7 @@ class Trainer:
         else:
             raise ValueError("Expected kind, got %r", kind)
         self.challenge = self.answer = None
+        self._init()
 
     def check(self, answer):
         converted = self._plugin.convert_word(answer.strip())
@@ -33,6 +34,18 @@ class Trainer:
             return True
 
     def next(self):
-        self.challenge, self.answer = random.choice(self._words)
+        assert len(self._words) != 0
+        try:
+            self.challenge, self.answer = self._words[self._ptr]
+        except IndexError:
+            LOG.info("All words finished, starting from the beginning")
+            self._init()
+            return self.next()
+        else:
+            self._ptr += 1
         LOG.debug("Next challenge is '%s'", self.challenge)
         return self.challenge
+
+    def _init(self):
+        self._ptr = 0
+        random.shuffle(self._words)
