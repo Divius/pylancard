@@ -60,6 +60,24 @@ class TestStore(StoreMixin, unittest.TestCase):
         convert_mock.assert_any_call('word1')
         convert_mock.assert_any_call('meaning3')
 
+    def test_delete(self, convert_mock):
+        self.store.delete('word1')
+        self.assertNotIn('word1', self.store.direct_index)
+        self.assertNotIn('meaning1', self.store.reverse_index)
+        convert_mock.assert_called_once_with('word1')
+
+    def test_delete_not_found(self, convert_mock):
+        self.assertRaises(KeyError, self.store.delete, 'word??')
+        convert_mock.assert_called_once_with('word??')
+
+    def test_delete_silent(self, convert_mock):
+        orig_direct = self.store.direct_index.copy()
+        orig_reverse = self.store.reverse_index.copy()
+        self.store.delete('word??', silent=True)
+        self.assertEqual(orig_direct, self.store.direct_index)
+        self.assertEqual(orig_reverse, self.store.reverse_index)
+        convert_mock.assert_called_once_with('word??')
+
 
 class TestStoreIO(unittest.TestCase):
 
@@ -146,6 +164,27 @@ class TestCliAdd(StoreMixin, unittest.TestCase):
         cli.add('add!', self.store, ['word3=meaning3'])
         add_mock.assert_called_once_with('word3', 'meaning3',
                                          may_overwrite=True)
+
+
+@patch.object(store.Store, 'delete')
+class TestCliDelete(StoreMixin, unittest.TestCase):
+
+    def test_delete(self, delete_mock):
+        cli.delete('delete', self.store, ['word1'])
+        delete_mock.assert_called_once_with('word1')
+
+    def test_delete_multi(self, delete_mock):
+        cli.delete('delete', self.store, ['word1', 'word2'])
+        delete_mock.assert_any_call('word1')
+        delete_mock.assert_any_call('word2')
+
+    @patch.object(builtins, 'print')
+    def test_delete_not_found(self, print_mock, delete_mock):
+        delete_mock.side_effect = KeyError
+        cli.delete('delete', self.store, ['word??', 'word'])
+        print_mock.assert_called_once_with(
+            "ERROR: `delete`: word 'word??' was not found")
+        delete_mock.assert_called_once_with('word??')
 
 
 @patch.object(builtins, 'print')

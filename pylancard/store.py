@@ -63,6 +63,17 @@ class Store(dict):
         self.direct_index[word1] = word2
         self.reverse_index[word2] = word1
 
+    def delete(self, word, silent=False):
+        word = self.original_plugin.convert_word(word)
+        try:
+            del self.direct_index[word]
+        except KeyError:
+            if not silent:
+                raise
+        self.reverse_index = {key: value
+                              for key, value in self.reverse_index.items()
+                              if value != word}
+
     def _import_plugin(self, lang):
         try:
             module = __import__("%s.%s" % (self._PREFIX, lang),

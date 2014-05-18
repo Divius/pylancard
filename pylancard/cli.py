@@ -58,6 +58,16 @@ def add(command, store, arguments):
             print(str(ex))
 
 
+def delete(command, store, arguments):
+    # TODO: implement silent deletion
+    for word in arguments:
+        try:
+            store.delete(word.strip())
+        except KeyError:
+            print("ERROR: `delete`: word '%s' was not found" % word)
+            return
+
+
 def list_(command, store, arguments):
     for tpl in sorted(store.direct_index.items()):
         print("%s\t%s" % tpl)
@@ -130,6 +140,7 @@ DEFAULT_COMMANDS = {
     'help': help_,
     'add': add,
     'add!': add,
+    'delete': delete,
     'list': list_,
     'direct': train,
     'reverse': train,
