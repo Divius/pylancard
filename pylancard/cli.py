@@ -21,6 +21,8 @@ Commands:
   Will never overwrite anything.
 > add! word1=meaning1 word2="quoted meaning2"
   The same as `add`, but will silently overwrite words.
+> delete word1 word2 ...
+  Delete given words from dictionary
 > list
   List all words
 > help
