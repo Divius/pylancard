@@ -39,21 +39,21 @@ class StoreMixin:
 class TestStore(StoreMixin, unittest.TestCase):
 
     def test_add(self, convert_mock):
-        self.store.add_word('word3', 'meaning3')
+        self.store.add('word3', 'meaning3')
         self.assertEqual('meaning3', self.store.direct_index['word3'])
         self.assertEqual('word3', self.store.reverse_index['meaning3'])
         convert_mock.assert_any_call('word3')
         convert_mock.assert_any_call('meaning3')
 
     def test_add_no_overwrite(self, convert_mock):
-        self.assertRaises(KeyError, self.store.add_word, 'word1', 'meaning3')
+        self.assertRaises(KeyError, self.store.add, 'word1', 'meaning3')
         self.assertEqual('meaning1', self.store.direct_index['word1'])
         self.assertEqual('word1', self.store.reverse_index['meaning1'])
         convert_mock.assert_any_call('word1')
         convert_mock.assert_any_call('meaning3')
 
     def test_add_overwrite(self, convert_mock):
-        self.store.add_word('word1', 'meaning3', may_overwrite=True)
+        self.store.add('word1', 'meaning3', may_overwrite=True)
         self.assertEqual('meaning3', self.store.direct_index['word1'])
         self.assertEqual('word1', self.store.reverse_index['meaning3'])
         convert_mock.assert_any_call('word1')
@@ -133,15 +133,14 @@ class TestBaseLanguage(unittest.TestCase):
         self.assertTrue(desc.present)
 
 
+@patch.object(store.Store, 'add')
 class TestCliAdd(StoreMixin, unittest.TestCase):
 
-    @patch.object(store.Store, 'add_word')
     def test_add_one(self, add_mock):
         cli.add('add', self.store, ['word3=meaning3'])
         add_mock.assert_called_once_with('word3', 'meaning3',
                                          may_overwrite=False)
 
-    @patch.object(store.Store, 'add_word')
     def test_add_one_overwrite(self, add_mock):
         cli.add('add!', self.store, ['word3=meaning3'])
         add_mock.assert_called_once_with('word3', 'meaning3',

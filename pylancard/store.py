@@ -55,7 +55,7 @@ class Store(dict):
     def __exit__(self, *_):
         self.save()
 
-    def add_word(self, word1, word2, may_overwrite=False):
+    def add(self, word1, word2, may_overwrite=False):
         word1 = self.original_plugin.convert_word(word1)
         word2 = self.meaning_plugin.convert_word(word2)
         if word1 in self.direct_index and not may_overwrite:

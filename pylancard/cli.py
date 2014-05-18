@@ -53,7 +53,7 @@ def add(command, store, arguments):
     may_overwrite = command.endswith('!')
     for word, meaning in words:
         try:
-            store.add_word(word, meaning, may_overwrite=may_overwrite)
+            store.add(word, meaning, may_overwrite=may_overwrite)
         except KeyError as ex:
             print(str(ex))
 
