@@ -1,5 +1,5 @@
 FILE?=${HOME}/.pylancard
-COVERAGE_GOAL?=70
+COVERAGE_GOAL?=85
 
 all: test run
 

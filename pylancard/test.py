@@ -1,8 +1,9 @@
+import builtins
 import os
 import tempfile
 import unittest
 
-from mock import patch  # noqa
+from mock import patch, sentinel  # noqa
 
 from pylancard import cli
 from pylancard import store
@@ -145,3 +146,62 @@ class TestCliAdd(StoreMixin, unittest.TestCase):
         cli.add('add!', self.store, ['word3=meaning3'])
         add_mock.assert_called_once_with('word3', 'meaning3',
                                          may_overwrite=True)
+
+
+@patch.object(builtins, 'print')
+class TestCliList(StoreMixin, unittest.TestCase):
+
+    def test_list(self, print_mock):
+        cli.list_('list', self.store, [])
+        print_mock.assert_any_call("word1\tmeaning1")
+        print_mock.assert_any_call("word2\tmeaning2")
+        self.assertEqual(2, print_mock.call_count)
+
+
+@patch.object(builtins, 'input')
+@patch.object(builtins, 'print')
+@patch.object(trainer, 'Trainer')
+class TestCliTrainer(unittest.TestCase):
+
+    def test_train(self, trainer_mock, print_mock, input_mock):
+        trainer_mock.return_value.next.return_value = 'word'
+        input_mock.side_effect = EOFError()
+        cli.train('cmd', sentinel.store, [])
+        trainer_mock.return_value.next.assert_called_once_with()
+        print_mock.assert_any_call("Next word: word")
+
+    def test_correct(self, trainer_mock, print_mock, input_mock):
+        trainer_mock.return_value.next.side_effect = ['word1', 'word2']
+        trainer_mock.return_value.check.return_value = True
+        input_mock.side_effect = ['word1', EOFError()]
+        cli.train('cmd', sentinel.store, [])
+        trainer_mock.return_value.next.assert_called_with()
+        self.assertEqual(2, trainer_mock.return_value.next.call_count)
+        print_mock.assert_any_call("Next word: word1")
+        print_mock.assert_any_call("Next word: word2")
+
+    def test_incorrect(self, trainer_mock, print_mock, input_mock):
+        trainer_mock.return_value.next.return_value = 'word'
+        trainer_mock.return_value.check.return_value = False
+        input_mock.side_effect = ['word1', EOFError()]
+        cli.train('cmd', sentinel.store, [])
+        trainer_mock.return_value.next.assert_called_once_with()
+        print_mock.assert_any_call("Next word: word")
+        print_mock.assert_any_call("Wrong, try again")
+
+    def test_skip(self, trainer_mock, print_mock, input_mock):
+        trainer_mock.return_value.next.side_effect = ['word1', 'word2']
+        input_mock.side_effect = ['/skip', EOFError()]
+        cli.train('cmd', sentinel.store, [])
+        trainer_mock.return_value.next.assert_called_with()
+        self.assertEqual(2, trainer_mock.return_value.next.call_count)
+        self.assertFalse(trainer_mock.return_value.check.called)
+        print_mock.assert_any_call("Next word: word1")
+        print_mock.assert_any_call("Next word: word2")
+
+    def test_quit(self, trainer_mock, print_mock, input_mock):
+        trainer_mock.return_value.next.return_value = 'word'
+        input_mock.return_value = '/quit'
+        cli.train('cmd', sentinel.store, [])
+        trainer_mock.return_value.next.assert_called_once_with()
+        self.assertFalse(trainer_mock.return_value.check.called)
